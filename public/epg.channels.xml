@@ -4,5 +4,12 @@
   <channel site="tvpassport.com" lang="en" xmltv_id="Newsmax2.us" site_id="newsmax2/37081">Newsmax2</channel>
   <channel site="tvpassport.com" lang="en" xmltv_id="NewsmaxTV.us" site_id="newsmax-tv/16818">NewsMax TV</channel>
   <channel site="i.mjh.nz" lang="en" xmltv_id="RealAmericasVoice.us" site_id="SamsungTVPlus/us#USBB1900002KF">Real America&apos;s Voice</channel>
+  <channel site="tvtv.us" lang="en" xmltv_id="RFDTV.us" site_id="25148">RFD-TV</channel>
+  <channel site="tvpassport.com" lang="en" xmltv_id="BBCAmerica.us" site_id="bbc-america--east-hd/11121">BBC America - East HD</channel>
+  <channel site="tvtv.us" lang="en" xmltv_id="BBCNews.uk" site_id="89690">BBC World News (North America)</channel>
+  <channel site="tvtv.us" lang="en" xmltv_id="i24NEWSEnglishUSA.il" site_id="87376">i24 News English</channel>
+  <channel site="tvpassport.com" lang="en" xmltv_id="TBN.us" site_id="tbn--trinity-broadcasting-network--east/1119">TBN - Trinity Broadcasting Network - East</channel>
+  <channel site="i.mjh.nz" lang="en" xmltv_id="CBSNews247.us" site_id="Plex/us#5e20b730f2f8d5003d739db7-6571f43a1d2aae780d597196">CBS News</channel>
+  <channel site="tvtv.us" lang="en" xmltv_id="SmithsonianChannel.us" site_id="58532">Smithsonian</channel>
   <channel site="tvpassport.com" lang="en" xmltv_id="WHECTV101.us" site_id="nbc-whec-rochester-ny-hd/13762">NBC (WHEC) Rochester, NY HD</channel>
 </channels>
