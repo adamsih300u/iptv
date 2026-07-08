@@ -19,6 +19,19 @@ channels:
   - id: Newsmax2.us
   - id: NewsmaxTV.us
   - id: RealAmericasVoice.us
+  - id: RFDTV.us
+  - id: BBCAmerica.us
+  - id: BBCNews.uk
+  - id: i24NEWSEnglishUSA.il
+  - id: TBN.us
+  - id: TCM.us
+  - id: CBNFamily.us
+  - id: CBNNews.us
+  - id: CBSNews247.us
+  - id: SkyNewsAustralia.au
+  - id: SmithsonianChannel.us
+  - id: NASATV.us
+  - id: NTDTVEnglish.us
   - id: WHAMTV131.us
   - id: WHAMTV312.us
   - id: WHAMTV313.us
