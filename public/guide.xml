@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tv SYSTEM "xmltv.dtd">
+<tv generator-info-name="iptv-emby-bot">
+  <channel id="FoxNewsChannel.us">
+    <display-name>Fox News Channel</display-name>
+  </channel>
+  <channel id="Newsmax2.us">
+    <display-name>Newsmax 2</display-name>
+  </channel>
+  <channel id="NewsmaxTV.us">
+    <display-name>Newsmax TV</display-name>
+  </channel>
+  <channel id="WHECTV101.us">
+    <display-name>WHEC-TV 10.1</display-name>
+  </channel>
+</tv>

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+epg/
+.tools/
+.cache/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example

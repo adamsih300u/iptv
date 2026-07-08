@@ -1,0 +1,34 @@
+# Curated channel allow-list for Emby.
+#
+# - Channels with a public stream in iptv-org/database are resolved automatically.
+# - Channels with no stream are skipped with a build warning (and will appear later
+#   when a stream is contributed upstream).
+# - Optional `override` supplies your own stream URL (your responsibility to source legally).
+#   Example for CNN.us (DMCA-blocklisted upstream):
+#
+#   - id: CNN.us
+#     override:
+#       url: https://example.com/your-legal-stream.m3u8
+#       title: CNN
+#       referrer: https://example.com/
+#       userAgent: Mozilla/5.0
+
+channels:
+  - id: FoxNewsChannel.us
+  - id: CNN.us
+  - id: Newsmax2.us
+  - id: NewsmaxTV.us
+  - id: WHAMTV131.us
+  - id: WHAMTV312.us
+  - id: WHAMTV313.us
+  - id: WROCTV81.us
+  - id: WROCTV82.us
+  - id: WROCTV83.us
+  - id: WROCTV84.us
+  - id: WHECTV101.us
+  - id: WHECTV102.us
+  - id: WHECTV103.us
+  - id: WHECTV104.us
+  - id: WHECTV105.us
+  - id: WHECTV106.us
+  - id: WHECTV107.us

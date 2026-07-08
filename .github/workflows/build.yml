@@ -1,0 +1,75 @@
+name: Build playlist
+
+on:
+  schedule:
+    # Daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - 'config/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build playlist and EPG channel map
+        run: npm run build
+
+      - name: Checkout iptv-org/epg
+        uses: actions/checkout@v4
+        with:
+          repository: iptv-org/epg
+          path: epg
+          # shallow clone is enough; grab scripts pull guide data at runtime
+
+      - name: Install EPG grabber dependencies
+        working-directory: epg
+        run: npm install --ignore-scripts
+
+      - name: Grab XMLTV guide
+        working-directory: epg
+        run: |
+          npm run grab -- \
+            --channels=../public/epg.channels.xml \
+            --output=../public/guide.xml \
+            --days=2 \
+            --maxConnections=5 \
+            --timeout=30000
+        continue-on-error: true
+
+      - name: Ensure guide.xml exists
+        run: |
+          if [ ! -f public/guide.xml ]; then
+            echo "EPG grab failed or produced no file; keeping playlist-build placeholder."
+          else
+            echo "guide.xml bytes: $(wc -c < public/guide.xml)"
+          fi
+
+      - name: Commit updated public artifacts
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: refresh playlist and guide'
+          file_pattern: public/*
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
