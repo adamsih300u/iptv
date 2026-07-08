@@ -5,5 +5,7 @@ http://138.121.15.230:9002/FOX-NEWS/index.m3u8
 https://amg00217-newsmax-newsmax-zeasn-022k9.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="NewsmaxTV.us" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Newsmax_logo.svg/960px-Newsmax_logo.svg.png" group-title="News",Newsmax TV (720p)
 https://nmx1ota.akamaized.net/hls/live/2107010/Live_1/index.m3u8
+#EXTINF:-1 tvg-id="RealAmericasVoice.us" tvg-logo="https://i.imgur.com/l7tmTjX.png" group-title="Uncategorized",Real America's Voice (1080p)
+https://stream.weathernationtv.com/RAVStirr_poekxujeisurekugzezyg/O1/playlistSCTE35.m3u8
 #EXTINF:-1 tvg-id="WHECTV101.us" group-title="Uncategorized",WHEC-TV 10.1 (1080p)
 https://amg01942-amg01942c4-stirr-us-10190.playouts.now.amagi.tv/playlist.m3u8
