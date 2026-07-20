@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsx src/main.ts",
     "build:playlist": "tsx src/main.ts --playlist-only",
+    "build:fast": "tsx src/main.ts --playlist-only --no-probe",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",

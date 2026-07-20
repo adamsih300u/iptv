@@ -40,7 +40,7 @@ function isGeoBlocked(stream: ApiStream): boolean {
   return (stream.label ?? '').toLowerCase().includes('geo-blocked')
 }
 
-/** Prefer non-geo-blocked streams, then higher quality. */
+/** Prefer non-geo-blocked streams, then higher quality, then stable URL order. */
 export function pickBestStream(streams: ApiStream[]): ApiStream | null {
   if (streams.length === 0) return null
 
@@ -48,7 +48,9 @@ export function pickBestStream(streams: ApiStream[]): ApiStream | null {
     const geoA = isGeoBlocked(a) ? 1 : 0
     const geoB = isGeoBlocked(b) ? 1 : 0
     if (geoA !== geoB) return geoA - geoB
-    return qualityScore(b.quality) - qualityScore(a.quality)
+    const qualityDiff = qualityScore(b.quality) - qualityScore(a.quality)
+    if (qualityDiff !== 0) return qualityDiff
+    return a.url.localeCompare(b.url)
   })
 
   return ranked[0] ?? null
@@ -73,13 +75,26 @@ function indexById<T extends { id: string }>(items: T[]): Map<string, T> {
   return new Map(items.map((item) => [item.id, item]))
 }
 
+export interface ResolveOptions {
+  /**
+   * When set, only streams whose URL is in this set are considered.
+   * Used after liveness probing; if empty for a channel, it is skipped.
+   */
+  aliveUrls?: Set<string>
+  /** When true (default if aliveUrls provided), warn when candidates failed the probe. */
+  probed?: boolean
+}
+
 export function resolveChannels(
   entries: ChannelConfigEntry[],
   snapshot: ApiSnapshot,
+  options: ResolveOptions = {},
 ): ResolveResult {
   const channelById = indexById(snapshot.channels)
   const categoryById = indexById(snapshot.categories)
   const blocklistById = new Map(snapshot.blocklist.map((entry) => [entry.channel, entry]))
+  const aliveUrls = options.aliveUrls
+  const probed = options.probed ?? aliveUrls !== undefined
 
   const streamsByChannel = new Map<string, ApiStream[]>()
   for (const stream of snapshot.streams) {
@@ -112,6 +127,14 @@ export function resolveChannels(
     }
 
     if (entry.override) {
+      if (aliveUrls && !aliveUrls.has(entry.override.url)) {
+        warnings.push({
+          channelId: entry.id,
+          message: 'override.url failed liveness probe; skipped',
+        })
+        continue
+      }
+
       resolved.push({
         id: entry.id,
         name: entry.override.title ?? meta?.name ?? entry.id,
@@ -150,8 +173,30 @@ export function resolveChannels(
       continue
     }
 
-    const streams = streamsByChannel.get(entry.id) ?? []
-    const best = pickBestStream(streams)
+    const allStreams = streamsByChannel.get(entry.id) ?? []
+    if (allStreams.length === 0) {
+      warnings.push({
+        channelId: entry.id,
+        message: 'no stream URL in database; skipped',
+      })
+      continue
+    }
+
+    const candidates = aliveUrls
+      ? allStreams.filter((stream) => aliveUrls.has(stream.url))
+      : allStreams
+
+    if (candidates.length === 0) {
+      warnings.push({
+        channelId: entry.id,
+        message: probed
+          ? `all ${allStreams.length} stream candidate(s) failed liveness probe; skipped`
+          : 'no stream URL in database; skipped',
+      })
+      continue
+    }
+
+    const best = pickBestStream(candidates)
     if (!best) {
       warnings.push({
         channelId: entry.id,
@@ -174,4 +219,39 @@ export function resolveChannels(
   }
 
   return { resolved, warnings }
+}
+
+/** Collect unique stream candidates (database + overrides) that should be probed. */
+export function collectProbeTargets(
+  entries: ChannelConfigEntry[],
+  snapshot: ApiSnapshot,
+): Array<{ url: string; referrer?: string | null; userAgent?: string | null }> {
+  const channelIds = new Set(entries.map((e) => e.id))
+  const targets: Array<{ url: string; referrer?: string | null; userAgent?: string | null }> = []
+  const seen = new Set<string>()
+
+  for (const entry of entries) {
+    if (!entry.override) continue
+    if (seen.has(entry.override.url)) continue
+    seen.add(entry.override.url)
+    const target: { url: string; referrer?: string | null; userAgent?: string | null } = {
+      url: entry.override.url,
+    }
+    if (entry.override.referrer !== undefined) target.referrer = entry.override.referrer
+    if (entry.override.userAgent !== undefined) target.userAgent = entry.override.userAgent
+    targets.push(target)
+  }
+
+  for (const stream of snapshot.streams) {
+    if (!stream.channel || !channelIds.has(stream.channel)) continue
+    if (seen.has(stream.url)) continue
+    seen.add(stream.url)
+    targets.push({
+      url: stream.url,
+      referrer: stream.referrer,
+      userAgent: stream.user_agent,
+    })
+  }
+
+  return targets
 }

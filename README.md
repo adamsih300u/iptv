@@ -71,6 +71,18 @@ placeholder `public/guide.xml`. The full schedule download runs in CI by cloning
 If you already have Node 20+ installed globally, skip the bootstrap and just use
 `npm ci` as usual.
 
+## Stream selection & liveness
+
+When iptv-org lists multiple URLs for one channel, the bot:
+
+1. Probes each unique candidate URL (HEAD, then short GET) with the stream’s
+   referrer/user-agent when present
+2. Drops dead/unreachable candidates
+3. Picks the best remaining stream (non-geo-blocked, then highest quality,
+   then stable URL order)
+
+Use `--no-probe` (or `npm run build:fast`) to skip probes during local iteration.
+
 ## Automation
 
 - `.github/workflows/build.yml` — daily cron + manual dispatch; rebuilds and

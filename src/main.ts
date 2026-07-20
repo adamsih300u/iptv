@@ -5,7 +5,8 @@ import { loadChannelsConfig } from './config.js'
 import { buildChannelsXml, buildEmptyGuideXml, buildEpgMappings } from './epgConfig.js'
 import { fetchApiSnapshot } from './fetch.js'
 import { buildPlaylist } from './playlist.js'
-import { resolveChannels } from './resolve.js'
+import { collectProbeTargets, resolveChannels } from './resolve.js'
+import { filterAliveStreams } from './validate.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -19,6 +20,8 @@ export interface BuildOptions {
   configPath?: string
   publicDir?: string
   playlistOnly?: boolean
+  /** Skip HTTP liveness probes (faster; may publish dead links). */
+  noProbe?: boolean
   fetchImpl?: typeof fetch
 }
 
@@ -26,6 +29,7 @@ export async function runBuild(options: BuildOptions = {}): Promise<void> {
   const configPath = options.configPath ?? join(ROOT, 'config', 'channels.yaml')
   const publicDir = options.publicDir ?? join(ROOT, 'public')
   const playlistOnly = options.playlistOnly ?? false
+  const noProbe = options.noProbe ?? false
 
   const config = loadChannelsConfig(configPath)
   console.log(`Loaded ${config.channels.length} channel(s) from ${configPath}`)
@@ -35,7 +39,38 @@ export async function runBuild(options: BuildOptions = {}): Promise<void> {
     `Fetched API snapshot: ${snapshot.channels.length} channels, ${snapshot.streams.length} streams`,
   )
 
-  const { resolved, warnings } = resolveChannels(config.channels, snapshot)
+  let aliveUrls: Set<string> | undefined
+  if (!noProbe) {
+    const targets = collectProbeTargets(config.channels, snapshot)
+    console.log(`Probing ${targets.length} unique stream URL(s) for liveness...`)
+
+    const probeOpts = {
+      timeoutMs: 8000,
+      concurrency: 8,
+      ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+    }
+    const { results } = await filterAliveStreams(targets, probeOpts)
+
+    const aliveCount = results.filter((r) => r.alive).length
+    const dead = results.filter((r) => !r.alive)
+    console.log(`Liveness: ${aliveCount} alive, ${dead.length} dead/unreachable`)
+
+    for (const result of dead) {
+      console.log(
+        `  dead: ${result.url} (${result.error ?? `HTTP ${result.status ?? 'n/a'}`}, via ${result.method ?? 'n/a'})`,
+      )
+    }
+
+    aliveUrls = new Set(results.filter((r) => r.alive).map((r) => r.url))
+  } else {
+    console.log('Liveness probe skipped (--no-probe)')
+  }
+
+  const resolveOpts = {
+    probed: !noProbe,
+    ...(aliveUrls ? { aliveUrls } : {}),
+  }
+  const { resolved, warnings } = resolveChannels(config.channels, snapshot, resolveOpts)
 
   for (const warning of warnings) {
     githubWarning(warning.channelId, warning.message)
@@ -70,7 +105,8 @@ const isDirectRun = process.argv[1] && fileURLToPath(import.meta.url) === resolv
 
 if (isDirectRun) {
   const playlistOnly = process.argv.includes('--playlist-only')
-  runBuild({ playlistOnly }).catch((error: unknown) => {
+  const noProbe = process.argv.includes('--no-probe')
+  runBuild({ playlistOnly, noProbe }).catch((error: unknown) => {
     console.error(error)
     process.exitCode = 1
   })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pickBestStream, resolveChannels } from '../src/resolve.js'
+import { collectProbeTargets, pickBestStream, resolveChannels } from '../src/resolve.js'
 import { snapshot, streams } from './fixtures/api.js'
 
 describe('pickBestStream', () => {
@@ -10,6 +10,32 @@ describe('pickBestStream', () => {
 
   it('returns null for an empty list', () => {
     expect(pickBestStream([])).toBeNull()
+  })
+
+  it('breaks quality ties with stable URL order', () => {
+    const best = pickBestStream([
+      {
+        channel: 'X.us',
+        feed: 'SD',
+        title: 'X',
+        url: 'http://z.example.com/a.m3u8',
+        referrer: null,
+        user_agent: null,
+        quality: '720p',
+        label: null,
+      },
+      {
+        channel: 'X.us',
+        feed: 'SD',
+        title: 'X',
+        url: 'http://a.example.com/a.m3u8',
+        referrer: null,
+        user_agent: null,
+        quality: '720p',
+        label: null,
+      },
+    ])
+    expect(best?.url).toBe('http://a.example.com/a.m3u8')
   })
 })
 
@@ -70,5 +96,52 @@ describe('resolveChannels', () => {
   it('uses Uncategorized when categories are empty', () => {
     const result = resolveChannels([{ id: 'WHECTV101.us' }], snapshot)
     expect(result.resolved[0]?.groupTitle).toBe('Uncategorized')
+  })
+
+  it('only considers alive URLs when a probe set is provided', () => {
+    const result = resolveChannels([{ id: 'FoxNewsChannel.us' }], snapshot, {
+      aliveUrls: new Set(['http://example.com/fox-144.m3u8']),
+      probed: true,
+    })
+
+    expect(result.resolved).toHaveLength(1)
+    expect(result.resolved[0]?.url).toBe('http://example.com/fox-144.m3u8')
+  })
+
+  it('skips channels when every candidate failed the probe', () => {
+    const result = resolveChannels([{ id: 'FoxNewsChannel.us' }], snapshot, {
+      aliveUrls: new Set(),
+      probed: true,
+    })
+
+    expect(result.resolved).toHaveLength(0)
+    expect(result.warnings[0]?.message).toMatch(/failed liveness probe/)
+  })
+
+  it('skips override URLs that failed the probe', () => {
+    const result = resolveChannels(
+      [{ id: 'CNN.us', override: { url: 'https://example.com/cnn.m3u8' } }],
+      snapshot,
+      { aliveUrls: new Set(), probed: true },
+    )
+    expect(result.resolved).toHaveLength(0)
+    expect(result.warnings.some((w) => w.message.includes('override.url failed'))).toBe(true)
+  })
+})
+
+describe('collectProbeTargets', () => {
+  it('includes database streams and overrides for configured channels only', () => {
+    const targets = collectProbeTargets(
+      [
+        { id: 'FoxNewsChannel.us' },
+        { id: 'CNN.us', override: { url: 'https://example.com/cnn.m3u8' } },
+      ],
+      snapshot,
+    )
+
+    const urls = targets.map((t) => t.url)
+    expect(urls).toContain('http://example.com/fox-480.m3u8')
+    expect(urls).toContain('https://example.com/cnn.m3u8')
+    expect(urls).not.toContain('https://example.com/newsmax.m3u8')
   })
 })
