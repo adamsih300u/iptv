@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <channels>
   <channel site="tvpassport.com" lang="en" xmltv_id="FoxNewsChannel.us" site_id="fox-news-hd/6207">Fox News HD</channel>
+  <channel site="tvpassport.com" lang="en" xmltv_id="CNN.us" site_id="cnn/70">CNN</channel>
   <channel site="tvpassport.com" lang="en" xmltv_id="Newsmax2.us" site_id="newsmax2/37081">Newsmax2</channel>
   <channel site="tvpassport.com" lang="en" xmltv_id="NewsmaxTV.us" site_id="newsmax-tv/16818">NewsMax TV</channel>
   <channel site="i.mjh.nz" lang="en" xmltv_id="RealAmericasVoice.us" site_id="SamsungTVPlus/us#USBB1900002KF">Real America&apos;s Voice</channel>
