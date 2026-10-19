@@ -9,7 +9,7 @@ https://amg00217-newsmax-newsmax-rokuus-dur76.amagi.tv/playlist.m3u8
 https://a-cdn.klowdtv.com/live2/newsmax_720p/playlist.m3u8
 #EXTINF:-1 tvg-id="RealAmericasVoice.us" tvg-logo="https://i.imgur.com/l7tmTjX.png" group-title="Uncategorized",Real America's Voice (1080p)
 https://stream.weathernationtv.com/RAVStirr_poekxujeisurekugzezyg/O1/playlistSCTE35.m3u8
-#EXTINF:-1 tvg-id="BBCAmerica.us" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/86/BBC_America_logo_2021.svg" group-title="Entertainment",BBC America (720p)
+#EXTINF:-1 tvg-id="BBCAmerica.us" tvg-logo="https://imgx.fubo.tv/station_logos/bbc-america_c.png" group-title="Entertainment",BBC America (720p)
 http://23.239.31.26:8989/bbcamerica/index.m3u8
 #EXTINF:-1 tvg-id="BBCNews.uk" tvg-logo="https://dtil.tmsimg.com/assets/s158142_ld_h15_aa.png?lock=720x540" group-title="News",BBC News (1080p)
 http://23.237.104.106:8080/USA_BBC_NEWS/index.m3u8
